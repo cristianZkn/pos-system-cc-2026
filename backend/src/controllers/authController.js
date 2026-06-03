@@ -18,9 +18,9 @@ const login = async (req, res) => {
 
     const result = await pool.query(
       `SELECT u.*, r.nombre as rol
-       FROM usuarios u
-       JOIN roles r ON u.rol_id = r.id
-       WHERE u.email = $1 AND u.activo = true`,
+      FROM usuarios u
+      JOIN roles r ON u.rol_id = r.id
+      WHERE u.email = $1 AND u.activo = true`,
       [email]
     );
 
@@ -42,8 +42,20 @@ const login = async (req, res) => {
       { expiresIn: process.env.JWT_EXPIRES_IN || '8h' }
     );
 
+    // ─── IMPLEMENTACIÓN CLOUD: Seguridad de Sesión ───────────────────────────
+    // En arquitecturas Cloud (ej. usando AWS ALB, CloudFront o API Gateway), es vital
+    // proteger el token de ataques XSS. Al enviarlo como una Cookie HttpOnly,
+    // garantizamos que el token viaje seguro en las cabeceras HTTP, permitiendo
+    // a los balanceadores de carga gestionar la sesión de forma nativa sin que el
+    // JavaScript del cliente (frontend) pueda interceptarlo.
+    res.cookie('token', token, {
+      httpOnly: true, // Impide que el frontend acceda a la cookie vía JavaScript (previene XSS)
+      secure: process.env.NODE_ENV === 'production', // Cloud: Solo HTTPS
+      sameSite: 'strict', // Previene CSRF cruzado
+      maxAge: 8 * 60 * 60 * 1000 // 8 horas en milisegundos
+    });
+
     res.json({
-      token,
       user: { id: user.id, nombre: user.nombre, email: user.email, rol: user.rol },
     });
   } catch (err) {
@@ -63,8 +75,8 @@ const me = async (req, res) => {
     }
     const result = await pool.query(
       `SELECT u.id, u.nombre, u.email, r.nombre as rol
-       FROM usuarios u JOIN roles r ON u.rol_id = r.id
-       WHERE u.id = $1`,
+      FROM usuarios u JOIN roles r ON u.rol_id = r.id
+      WHERE u.id = $1`,
       [req.user.id]
     );
     if (result.rows.length === 0) return res.status(404).json({ error: 'Usuario no encontrado.' });
@@ -74,4 +86,17 @@ const me = async (req, res) => {
   }
 };
 
-module.exports = { login, me };
+/**
+ * POST /api/auth/logout
+ * Elimina la cookie del token para cerrar sesión.
+ */
+const logout = (req, res) => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict'
+  });
+  res.json({ message: 'Sesión cerrada exitosamente.' });
+};
+
+module.exports = { login, me, logout };

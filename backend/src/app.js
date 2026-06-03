@@ -1,7 +1,15 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+//importar helmet para mejorar la seguridad de la aplicacion
+const helmet = require('helmet');
+//importar rate-limit para limitar el numero de peticiones que llegan a la API
+const rateLimit = require('express-rate-limit');
+//importar cookie-parser para manejar las cookies
+const cookieParser = require('cookie-parser');
 const path = require('path');
+//importar la conexion a la base de datos
+const pool = require('./config/database');
 
 const authRoutes     = require('./routes/auth');
 const productRoutes  = require('./routes/products');
@@ -14,36 +22,53 @@ const evalRoutes     = require('./routes/eval');
 
 const app = express();
 
+// ─── SEGURIDAD (Helmet) ──────────────────────────────────────────────────────
+// Helmet protege la aplicación configurando múltiples cabeceras HTTP de seguridad.
+// Previene ataques comunes como Cross-Site Scripting (XSS), Clickjacking y 
+// oculta la cabecera 'X-Powered-By' para no revelar que usamos Express.
+app.use(helmet());
+
 // ─── CORS ────────────────────────────────────────────────────────────────────
-// ⚠️ TODO: En producción restringir a dominios específicos:
-//   app.use(cors({ origin: process.env.FRONTEND_URL, credentials: true }));
-app.use(cors()); // Permite todos los orígenes — NO recomendado en producción
+// Configuración estricta de CORS:
+// Se restringe el acceso únicamente al dominio del frontend configurado en las
+// variables de entorno. Esto previene que otros sitios web hagan peticiones a la API.
+const corsOptions = {
+  origin: process.env.FRONTEND_URL,
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
 
 // ─── PARSERS ─────────────────────────────────────────────────────────────────
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // ─── ARCHIVOS ESTÁTICOS (imágenes) ───────────────────────────────────────────
 // TODO: Eliminar cuando se migre a almacenamiento en la nube (S3, GCS, etc.)
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 // ─── HEALTH CHECK ────────────────────────────────────────────────────────────
-// TODO: Implementar endpoint de health check para:
-//   - Load Balancers (ALB, NGINX, etc.)
-//   - Orquestadores de contenedores (ECS, Kubernetes)
-//   - Servicios de monitoreo
-//
-// app.get('/health', async (req, res) => {
-//   try {
-//     await pool.query('SELECT 1');
-//     res.json({ status: 'ok', db: 'ok', timestamp: new Date() });
-//   } catch {
-//     res.status(503).json({ status: 'error', db: 'unreachable' });
-//   }
-// });
+// Endpoint de health check para monitoreo y load balancers
+app.get('/health', async (req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    res.json({ status: 'ok', db: 'ok', timestamp: new Date() });
+  } catch {
+    res.status(503).json({ status: 'error', db: 'unreachable' });
+  }
+});
+
+// ─── RATE LIMITING ───────────────────────────────────────────────────────────
+// Limitador de peticiones para prevenir ataques de fuerza bruta en los inicios de sesión.
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 5, // Límite de 5 peticiones por IP en la ventana de tiempo
+  message: { error: 'Demasiados intentos de inicio de sesión. Por favor, inténtelo de nuevo después de 15 minutos.' }
+});
 
 // ─── RUTAS ───────────────────────────────────────────────────────────────────
-app.use('/api/auth',       authRoutes);
+app.use('/api/auth', authLimiter, authRoutes); // Ruta de autenticación (requiere LOGIN_RATE_LIMIT)
 app.use('/api/products',   productRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/clients',    clientRoutes);

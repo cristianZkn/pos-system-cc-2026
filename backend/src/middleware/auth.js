@@ -14,11 +14,11 @@ const jwt = require('jsonwebtoken');
  * 5. Eliminar el llamado directo a next() al final de esta función
  */
 const authMiddleware = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  // Ahora el token viaja de forma segura en las cookies, no en los headers
+  const token = req.cookies?.token;
 
   if (!token) {
-    return res.status(401).json({ error: 'Acceso denegado. Token requerido.' });
+    return res.status(401).json({ error: 'Acceso denegado. No se encontró el token de sesión.' });
   }
 
   try {
