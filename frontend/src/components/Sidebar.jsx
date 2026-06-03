@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
 const NAV = [
   { href: '/dashboard',   label: 'Dashboard',      adminOnly: false, icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
@@ -16,22 +16,12 @@ const NAV = [
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const router   = useRouter();
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const stored = localStorage.getItem('user');
-    if (stored) setUser(JSON.parse(stored));
-  }, []);
+  const { user, logout } = useAuth();
 
   const isAdmin = user?.rol === 'admin';
   const visibleNav = NAV.filter(item => !item.adminOnly || isAdmin);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    router.push('/login');
-  };
+  const handleLogout = () => logout();
 
   return (
     <aside className="w-56 bg-white border-r border-gray-200 flex flex-col h-full shrink-0">

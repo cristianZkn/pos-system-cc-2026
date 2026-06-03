@@ -8,21 +8,19 @@ const api = axios.create({
   baseURL: `${API_URL}/api`,
   timeout: 15000,
   headers: { 'Content-Type': 'application/json' },
-});
-
-api.interceptors.request.use((config) => {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
+  withCredentials: true, // Esto es clave: permite enviar y recibir cookies HttpOnly
 });
 
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Si recibimos un 401 y estamos en el navegador, emitiremos un evento custom o 
+    // dejaremos que el AuthContext maneje la redirección al fallar la petición de me()
     if (error.response?.status === 401 && typeof window !== 'undefined') {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      // Opcional: si falla algo distinto a la verificación inicial, podemos forzar recarga
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
