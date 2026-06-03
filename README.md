@@ -239,3 +239,21 @@ clientes ───── ventas ──── detalle_ventas ── productos
 - [ ] URL funcional del sistema desplegado
 - [ ] Bitácora de avances (Scrum board / Trello)
 - [ ] Presentación: problemática → arquitectura propuesta → decisiones técnicas → demo
+
+---
+
+## Historial de Versiones (Changelog)
+
+### v2 — Fase de Estabilización y Autenticación Segura
+*(Avances realizados preparando la arquitectura Cloud)*
+
+- **Seguridad Perimetral**:
+  - Incorporación de **Helmet** como primera línea de defensa de cabeceras HTTP.
+  - Implementación de **Rate Limiting** estricto en `/api/auth` para mitigar ataques de fuerza bruta.
+  - Configuración estricta de **CORS** ligada a variables de entorno (`FRONTEND_URL`).
+- **Autenticación Cloud-Native**:
+  - Migración completa de almacenamiento de sesión. Eliminación de Tokens en `localStorage` (vulnerable a XSS).
+  - Implementación de Cookies `HttpOnly`, `SameSite` y `Secure`.
+  - Creación de nuevo Contexto Global de React (`AuthContext`) que maneja sesiones transparentes sincronizadas con el Backend.
+- **Disponibilidad**:
+  - Creación del endpoint **Health Check** (`GET /health`) para integraciones con orquestadores (Docker, K8s) y balanceadores de carga (AWS ALB).
