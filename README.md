@@ -193,17 +193,17 @@ El frontend queda disponible en `http://localhost:3000`
 Este sistema fue desarrollado **intencionalmente** con las siguientes limitaciones que representan los desafíos típicos de un monolito sin preparación cloud. Identificarlas, justificarlas y resolverlas en la arquitectura cloud es parte central de la evaluación.
 
 ### Seguridad
-- [ ] **Credenciales con fallback hardcodeado** — Si no existe `.env`, el código usa `postgres/postgres`. Ver `backend/src/config/database.js`
-- [ ] **CORS permisivo** — `app.use(cors())` acepta cualquier origen. Ver `backend/src/app.js`
+- [x] **Credenciales con fallback hardcodeado** — Ahora se exigen estrictamente las variables de entorno (`DB_HOST`, `DB_USER`, etc.) deteniendo el servidor si faltan.
+- [x] **CORS permisivo** — Restringido al dominio del frontend (`process.env.FRONTEND_URL`).
 - [ ] **Sin validación de inputs** — Los controllers no validan tipos ni rangos (express-validator está instalado pero sin usar)
-- [ ] **Sin rate limiting** — La API no tiene límite de peticiones por IP
-- [ ] **Token en localStorage** — Vulnerable a XSS; en producción usar cookies HttpOnly
+- [x] **Sin rate limiting** — Se implementó `express-rate-limit` para prevenir fuerza bruta en `/api/auth`.
+- [x] **Token en localStorage** — Migrado a cookies HttpOnly (Preparación para entornos Cloud como AWS ALB o API Gateway que manejan sesiones seguras de forma transparente).
 
 ### Disponibilidad
-- [ ] **Sin health check** — No existe `GET /health`; necesario para ALB, ECS, Kubernetes
-- [ ] **Sin SSL en BD** — La conexión a PostgreSQL no usa TLS (requerido en RDS, Cloud SQL, etc.)
+- [x] **Sin health check** — Implementado `GET /health` para integraciones con Load Balancers y orquestadores (K8s, ECS).
+- [x] **Sin SSL en BD** — Implementado soporte de conexión cifrada (TLS) vía variable `DB_SSL=true` (requerido en AWS RDS, Cloud SQL).
 - [ ] **Sin clustering** — Un solo proceso Node.js; sin PM2, ECS tasks o pods de Kubernetes
-- [ ] **Sin reintentos de conexión** — Si la BD se reinicia, el proceso muere
+- [x] **Sin reintentos de conexión** — Creada función `connectWithRetry()`. Si la BD se cae o reinicia, el backend espera y reintenta conectarse antes de iniciar peticiones HTTP.
 
 ### Almacenamiento
 - [ ] **Imágenes en disco local** — `backend/uploads/` es incompatible con múltiples instancias. Migrar a S3 / GCS / Azure Blob + CDN
@@ -220,7 +220,7 @@ Este sistema fue desarrollado **intencionalmente** con las siguientes limitacion
 
 ## Esquema de base de datos
 
-```
+```text
 roles ─────────── usuarios
                      │
 categorias ─── productos
@@ -243,6 +243,16 @@ clientes ───── ventas ──── detalle_ventas ── productos
 ---
 
 ## Historial de Versiones (Changelog)
+
+### v3 — Resiliencia de Base de Datos
+*(Mejoras de disponibilidad y seguridad exigidas en la Nube)*
+
+- **Disponibilidad**:
+  - Implementación de **Reintentos de Conexión Automáticos** (`connectWithRetry`). El servidor ya no muere por cortes de red o reinicios de base de datos.
+  - Sincronización de inicio de HTTP: La API no recibe peticiones hasta asegurar una conexión estable con la BD.
+- **Seguridad y Cloud**:
+  - **Eliminación de contraseñas por defecto**. Ahora el código es totalmente *stateless* y depende 100% del entorno (`.env` o Secrets Manager).
+  - Habilitación de certificados **SSL dinámicos** (`DB_SSL`) para cifrar tráfico hacia Amazon RDS o Google Cloud SQL.
 
 ### v2 — Fase de Estabilización y Autenticación Segura
 *(Avances realizados preparando la arquitectura Cloud)*

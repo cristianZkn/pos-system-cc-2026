@@ -7,7 +7,7 @@ const validate = require('../middleware/validate');
 // Reglas de validación para el inicio de sesión
 const loginValidations = [
   body('email').isEmail().withMessage('Debe proporcionar un email válido.'),
-  body('password').notEmpty().withMessage('La contraseña es requerida.')
+  body('password').notEmpty().withMessage('La contraseña es obligatoria.')
 ];
 
 router.post('/login', loginValidations, validate, login);
