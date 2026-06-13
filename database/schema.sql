@@ -4,7 +4,7 @@
 -- ============================================================
 
 -- Extensiones
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- (No requeridas en esta versión)
 
 -- ============================================================
 -- ROLES

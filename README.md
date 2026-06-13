@@ -202,7 +202,7 @@ Este sistema fue desarrollado **intencionalmente** con las siguientes limitacion
 ### Disponibilidad
 - [x] **Sin health check** — Implementado `GET /health` para integraciones con Load Balancers y orquestadores (K8s, ECS).
 - [x] **Sin SSL en BD** — Implementado soporte de conexión cifrada (TLS) vía variable `DB_SSL=true` (requerido en AWS RDS, Cloud SQL).
-- [ ] **Sin clustering** — Un solo proceso Node.js; sin PM2, ECS tasks o pods de Kubernetes
+- [x] **Sin clustering** — Backend "Dockerizado" (`Dockerfile`). En lugar de usar PM2, el escalado (clustering) será manejado por el orquestador de contenedores (Azure Container Apps / Kubernetes) instanciando múltiples contenedores *Stateless*.
 - [x] **Sin reintentos de conexión** — Creada función `connectWithRetry()`. Si la BD se cae o reinicia, el backend espera y reintenta conectarse antes de iniciar peticiones HTTP.
 
 ### Almacenamiento
