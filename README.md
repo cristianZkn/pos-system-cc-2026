@@ -195,7 +195,7 @@ Este sistema fue desarrollado **intencionalmente** con las siguientes limitacion
 ### Seguridad
 - [x] **Credenciales con fallback hardcodeado** — Ahora se exigen estrictamente las variables de entorno (`DB_HOST`, `DB_USER`, etc.) deteniendo el servidor si faltan.
 - [x] **CORS permisivo** — Restringido al dominio del frontend (`process.env.FRONTEND_URL`).
-- [ ] **Sin validación de inputs** — Los controllers no validan tipos ni rangos (express-validator está instalado pero sin usar)
+- [x] **Sin validación de inputs** — Implementada validación exhaustiva con `express-validator` en todas las rutas transaccionales (auth, products, sales, clients, categories, users).
 - [x] **Sin rate limiting** — Se implementó `express-rate-limit` para prevenir fuerza bruta en `/api/auth`.
 - [x] **Token en localStorage** — Migrado a cookies HttpOnly (Preparación para entornos Cloud como AWS ALB o API Gateway que manejan sesiones seguras de forma transparente).
 
