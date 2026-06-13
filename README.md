@@ -206,7 +206,7 @@ Este sistema fue desarrollado **intencionalmente** con las siguientes limitacion
 - [x] **Sin reintentos de conexión** — Creada función `connectWithRetry()`. Si la BD se cae o reinicia, el backend espera y reintenta conectarse antes de iniciar peticiones HTTP.
 
 ### Almacenamiento
-- [ ] **Imágenes en disco local** — `backend/uploads/` es incompatible con múltiples instancias. Migrar a S3 / GCS / Azure Blob + CDN
+- [x] **Imágenes en disco local** — Migrado a Azure Blob Storage. Las imágenes ahora se guardan en la nube (Stateless), permitiendo clustering sin problemas de consistencia.
 
 ### Observabilidad
 - [ ] **Solo console.log** — Sin logging estructurado (Winston, Pino); no integrable con CloudWatch, Stackdriver, etc.

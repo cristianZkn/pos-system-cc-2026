@@ -1,7 +1,32 @@
 const pool = require('../config/database');
+const { BlobServiceClient } = require('@azure/storage-blob');
+const path = require('path');
 
-// TODO: Agregar validación de inputs con express-validator (ya instalado)
-// TODO: Sanitizar datos antes de insertarlos
+// Helper para subir imágenes a Azure Blob Storage
+const uploadToAzure = async (file) => {
+  const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
+  if (!connectionString) {
+    throw new Error('Azure Storage Connection String no configurada en el .env');
+  }
+
+  const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
+  const containerName = process.env.AZURE_STORAGE_CONTAINER_NAME || 'productos';
+  const containerClient = blobServiceClient.getContainerClient(containerName);
+
+  // Crear contenedor si no existe (con acceso público para lectura de imágenes)
+  await containerClient.createIfNotExists({ access: 'blob' });
+
+  const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${path.extname(file.originalname)}`;
+  const blockBlobClient = containerClient.getBlockBlobClient(uniqueName);
+
+  // Subir el buffer desde la memoria RAM hacia Azure
+  await blockBlobClient.uploadData(file.buffer, {
+    blobHTTPHeaders: { blobContentType: file.mimetype }
+  });
+
+  // Retorna la URL pública absoluta
+  return blockBlobClient.url;
+};
 
 const getAll = async (req, res) => {
   try {
@@ -50,8 +75,11 @@ const getById = async (req, res) => {
 const create = async (req, res) => {
   try {
     const { nombre, descripcion, precio, stock, categoria_id } = req.body;
-    // TODO: Validar que precio >= 0, stock >= 0, nombre no vacío, categoria_id exista
-    const imagen_url = req.file ? `/uploads/${req.file.filename}` : null;
+    
+    let imagen_url = null;
+    if (req.file) {
+      imagen_url = await uploadToAzure(req.file);
+    }
 
     const result = await pool.query(
       `INSERT INTO productos (nombre, descripcion, precio, stock, categoria_id, imagen_url)
@@ -68,7 +96,11 @@ const update = async (req, res) => {
   try {
     const { id } = req.params;
     const { nombre, descripcion, precio, stock, categoria_id, activo } = req.body;
-    const imagen_url = req.file ? `/uploads/${req.file.filename}` : undefined;
+    
+    let imagen_url = undefined;
+    if (req.file) {
+      imagen_url = await uploadToAzure(req.file);
+    }
 
     const fields = [];
     const values = [];
