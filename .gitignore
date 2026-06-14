@@ -4,7 +4,6 @@ node_modules/
 # Variables de entorno — NUNCA commitear archivos con secretos reales
 .env
 .env.local
-.env.production
 .env.*.local
 
 # Imágenes subidas localmente
