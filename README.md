@@ -244,6 +244,19 @@ clientes ───── ventas ──── detalle_ventas ── productos
 
 ## Historial de Versiones (Changelog)
 
+### v4 — Migración Cloud: Stateless, Docker & Base de Datos PaaS
+*(Hitos estructurales para soportar despliegue en la nube y Clustering)*
+
+- **Almacenamiento Desacoplado**:
+  - Migración exitosa de imágenes en disco local hacia **Azure Blob Storage** usando `@azure/storage-blob` y `memoryStorage` en backend.
+  - El backend ahora es 100% *Stateless*, permitiendo auto-escalado sin pérdida de recursos multimedia.
+- **Preparación para Clustering (CaaS)**:
+  - Dockerización del backend (`Dockerfile` y `.dockerignore`) usando imagen segura y ultraligera `node:20-alpine`. 
+  - La aplicación ahora es agnóstica del servidor, lista para ser desplegada en Azure Container Apps o AKS.
+- **Migración a Base de Datos Administrada**:
+  - Implementación de **Azure Database for PostgreSQL Flexible Server** (PaaS).
+  - Volcado de estructura (Schema) y datos iniciales (Semillas) a la nube, con configuración optimizada FinOps para capa gratuita.
+
 ### v3 — Resiliencia de Base de Datos
 *(Mejoras de disponibilidad y seguridad exigidas en la Nube)*
 
