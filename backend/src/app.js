@@ -23,6 +23,10 @@ const evalRoutes     = require('./routes/eval');
 
 const app = express();
 
+// Confiar en el proxy inverso (Azure Container Apps / Envoy)
+// Esto es crítico para que el Rate Limit lea la IP real del usuario y no la IP del proxy de Azure.
+app.set('trust proxy', 1);
+
 // ─── MÉTRICAS (Prometheus) ───────────────────────────────────────────────────
 const metricsMiddleware = promBundle({
   includeMethod: true, 
