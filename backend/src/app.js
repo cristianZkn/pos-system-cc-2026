@@ -75,15 +75,10 @@ app.get('/health', async (req, res) => {
 });
 
 // ─── RATE LIMITING ───────────────────────────────────────────────────────────
-// Limitador de peticiones para prevenir ataques de fuerza bruta en los inicios de sesión.
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 5, // Límite de 5 peticiones por IP en la ventana de tiempo
-  message: { error: 'Demasiados intentos de inicio de sesión. Por favor, inténtelo de nuevo después de 15 minutos.' }
-});
+// El rate limiting de autenticación fue movido específicamente a la ruta de login
 
 // ─── RUTAS ───────────────────────────────────────────────────────────────────
-app.use('/api/auth', authLimiter, authRoutes); // Ruta de autenticación (requiere LOGIN_RATE_LIMIT)
+app.use('/api/auth',       authRoutes); // Ruta de autenticación
 app.use('/api/products',   productRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/clients',    clientRoutes);
