@@ -234,9 +234,9 @@ clientes ───── ventas ──── detalle_ventas ── productos
 
 ## Entregables de la evaluación (recordatorio)
 
-- [ ] Diagrama de arquitectura cloud detallado
-- [ ] Repositorio GitHub con todo el código de implementación
-- [ ] URL funcional del sistema desplegado
+- [x] Diagrama de arquitectura cloud detallado
+- [x] Repositorio GitHub con todo el código de implementación
+- [x] URL funcional del sistema desplegado
 - [ ] Bitácora de avances (Scrum board / Trello)
 - [ ] Presentación: problemática → arquitectura propuesta → decisiones técnicas → demo
 
