@@ -10,7 +10,8 @@ const cookieParser = require('cookie-parser');
 const path = require('path');
 //importar la conexion a la base de datos
 const pool = require('./config/database');
-
+const promBundle = require('express-prom-bundle');
+const logger = require('./utils/logger');
 const authRoutes     = require('./routes/auth');
 const productRoutes  = require('./routes/products');
 const categoryRoutes = require('./routes/categories');
@@ -21,6 +22,20 @@ const userRoutes     = require('./routes/users');
 const evalRoutes     = require('./routes/eval');
 
 const app = express();
+
+// ─── MÉTRICAS (Prometheus) ───────────────────────────────────────────────────
+const metricsMiddleware = promBundle({
+  includeMethod: true, 
+  includePath: true, 
+  includeStatusCode: true, 
+  includeUp: true,
+  customLabels: { project_name: 'pos_system' },
+  promClient: {
+    collectDefaultMetrics: {
+    }
+  }
+});
+app.use(metricsMiddleware);
 
 // ─── SEGURIDAD (Helmet) ──────────────────────────────────────────────────────
 // Helmet protege la aplicación configurando múltiples cabeceras HTTP de seguridad.
@@ -82,7 +97,7 @@ app.use('/api/eval',       evalRoutes);  // Ruta de evaluación docente (requier
 //       e integrar con servicio de monitoreo (CloudWatch, Datadog, Sentry, etc.)
 // eslint-disable-next-line no-unused-vars
 app.use((err, _req, res, _next) => {
-  console.error('[ERROR]', err.stack);
+  logger.error(`[ERROR] ${err.message}`, { stack: err.stack });
   res.status(err.status || 500).json({ error: err.message || 'Error interno del servidor' });
 });
 

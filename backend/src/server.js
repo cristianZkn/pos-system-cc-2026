@@ -1,5 +1,6 @@
 const app = require('./app');
 const pool = require('./config/database');
+const logger = require('./utils/logger');
 
 const PORT = process.env.PORT || 3001;
 
@@ -8,8 +9,8 @@ const startServer = async () => {
   await pool.connectWithRetry();
 
   app.listen(PORT, () => {
-    console.log(`🚀 Servidor POS corriendo en http://localhost:${PORT}`);
-    console.log(`☁️  Ambiente: ${process.env.NODE_ENV || 'development'}`);
+    logger.info(`Servidor POS corriendo en puerto ${PORT}`);
+    logger.info(`Ambiente: ${process.env.NODE_ENV || 'development'}`);
   });
 };
 

@@ -209,12 +209,12 @@ Este sistema fue desarrollado **intencionalmente** con las siguientes limitacion
 - [x] **Imágenes en disco local** — Migrado a Azure Blob Storage. Las imágenes ahora se guardan en la nube (Stateless), permitiendo clustering sin problemas de consistencia.
 
 ### Observabilidad
-- [ ] **Solo console.log** — Sin logging estructurado (Winston, Pino); no integrable con CloudWatch, Stackdriver, etc.
-- [ ] **Sin métricas** — Sin instrumentación para Prometheus/Grafana o herramientas cloud equivalentes
+- [x] **Solo console.log** — Migrado a `winston` para emitir logs en formato JSON estructurado, integrables nativamente con Azure Log Analytics.
+- [x] **Sin métricas** — Implementado endpoint `/metrics` utilizando `express-prom-bundle` y `prom-client`, exponiendo telemetría en formato estándar de Prometheus.
 
 ### Configuración
-- [ ] **Sin secrets management** — No integra AWS Secrets Manager, Azure Key Vault ni GCP Secret Manager
-- [ ] **Sin variables de entorno para producción** — Faltan variables críticas (ver `.env.example`)
+- [x] **Sin secrets management** — Resuelto de forma *Cloud-Native* utilizando la inyección de secretos nativa de Azure Container Apps en las variables de entorno, manteniendo el contenedor agnóstico.
+- [x] **Sin variables de entorno para producción** — Inyectadas de manera segura (`DB_HOST`, `JWT_SECRET`, etc.) a través de la consola de Azure Container Apps.
 
 ---
 
