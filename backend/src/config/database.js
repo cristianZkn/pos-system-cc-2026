@@ -1,11 +1,12 @@
 const { Pool } = require('pg');
+const logger = require('../utils/logger');
 
 const requiredEnvVars = ['DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASSWORD'];
 const missing = requiredEnvVars.filter(key => !process.env[key]);
 
 if (missing.length > 0) {
-  console.error(`❌ ERROR CRÍTICO: Faltan variables de entorno para la base de datos: ${missing.join(', ')}`);
-  console.error('⚠️ Por seguridad (implementación Cloud), no se utilizarán credenciales por defecto. El servidor se detendrá.');
+  logger.error(`❌ ERROR CRÍTICO: Faltan variables de entorno para la base de datos: ${missing.join(', ')}`);
+  logger.error('⚠️ Por seguridad (implementación Cloud), no se utilizarán credenciales por defecto. El servidor se detendrá.');
   process.exit(1);
 }
 
@@ -25,7 +26,7 @@ const pool = new Pool({
 });
 
 pool.on('error', (err) => {
-  console.error('❌ Error inesperado en el pool de conexiones:', err.message);
+  logger.error('❌ Error inesperado en el pool de conexiones:', { error: err.message });
 });
 
 // Función de reconexión automática (Resiliencia Cloud)
@@ -33,16 +34,16 @@ pool.connectWithRetry = async (retries = 5, delay = 5000) => {
   for (let i = 1; i <= retries; i++) {
     try {
       const client = await pool.connect();
-      console.log('✅ Conexión a la base de datos establecida con éxito.');
+      logger.info('✅ Conexión a la base de datos establecida con éxito.');
       client.release();
       return true;
     } catch (err) {
-      console.error(`⚠️ Intento de conexión BD ${i}/${retries} fallido: ${err.message}`);
+      logger.error(`⚠️ Intento de conexión BD ${i}/${retries} fallido: ${err.message}`);
       if (i === retries) {
-        console.error('❌ No se pudo conectar a la base de datos tras múltiples intentos. Deteniendo servidor.');
+        logger.error('❌ No se pudo conectar a la base de datos tras múltiples intentos. Deteniendo servidor.');
         process.exit(1);
       }
-      console.log(`⏳ Reintentando en ${delay / 1000} segundos...`);
+      logger.info(`⏳ Reintentando en ${delay / 1000} segundos...`);
       await new Promise(res => setTimeout(res, delay));
     }
   }

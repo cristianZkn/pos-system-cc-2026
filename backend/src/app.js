@@ -63,9 +63,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// ─── ARCHIVOS ESTÁTICOS (imágenes) ───────────────────────────────────────────
-// TODO: Eliminar cuando se migre a almacenamiento en la nube (S3, GCS, etc.)
-app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+// ─── ALMACENAMIENTO (Stateless) ──────────────────────────────────────────────
+// Se eliminó la ruta de exposición de disco local ('/uploads') porque
+// el sistema ha sido migrado a Azure Blob Storage (Cloud-Native).
+// El contenedor ahora es 100% Stateless.
 
 // ─── HEALTH CHECK ────────────────────────────────────────────────────────────
 // Endpoint de health check para monitoreo y load balancers
