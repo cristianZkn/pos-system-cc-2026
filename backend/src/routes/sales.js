@@ -5,7 +5,7 @@ const { body } = require('express-validator');
 const validate = require('../middleware/validate');
 
 const saleValidations = [
-  body('cliente_id').isInt({ min: 1 }).withMessage('cliente_id debe ser un entero válido (venta sin cliente no permitida)'),
+  body('cliente_id').optional({ nullable: true }).isInt({ min: 1 }).withMessage('cliente_id debe ser un entero válido si se proporciona'),
   body('metodo_pago').optional().isIn(['efectivo', 'debito', 'credito', 'transferencia']).withMessage('metodo_pago inválido'),
   body('items').isArray({ min: 1 }).withMessage('items debe ser un arreglo con al menos un producto'),
   body('items.*.producto_id').isInt({ min: 1 }).withMessage('Cada item debe tener un producto_id entero'),
