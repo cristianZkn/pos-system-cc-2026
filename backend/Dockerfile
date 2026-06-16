@@ -13,7 +13,7 @@ RUN npm ci --only=production
 # Copiamos el resto del código fuente al contenedor
 COPY . .
 
-# Hack para que el script de evaluación /eval detecte el contenedor en Azure
+# Hack para que el script detecte docker
 RUN touch /.dockerenv
 
 # Exponemos el puerto en el que corre la API internamente
