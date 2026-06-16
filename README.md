@@ -213,7 +213,7 @@ Este sistema fue desarrollado **intencionalmente** con las siguientes limitacion
 - [x] **Sin métricas** — Implementado endpoint `/metrics` utilizando `express-prom-bundle` y `prom-client`, exponiendo telemetría en formato estándar de Prometheus.
 
 ### Configuración
-- [x] **Sin secrets management** — Resuelto de forma *Cloud-Native* utilizando la inyección de secretos nativa de Azure Container Apps en las variables de entorno, manteniendo el contenedor agnóstico.
+- [x] **Sin secrets management** — Resuelto, utilizando la inyección de secretos nativa de Azure Container Apps en las variables de entorno, manteniendo el contenedor agnóstico.
 - [x] **Sin variables de entorno para producción** — Inyectadas de manera segura (`DB_HOST`, `JWT_SECRET`, etc.) a través de la consola de Azure Container Apps.
 
 ---
@@ -237,7 +237,7 @@ clientes ───── ventas ──── detalle_ventas ── productos
 - [x] Diagrama de arquitectura cloud detallado
 - [x] Repositorio GitHub con todo el código de implementación
 - [x] URL funcional del sistema desplegado
-- [ ] Bitácora de avances (Scrum board / Trello)
+- [x] Bitácora de avances (Scrum board / Trello)
 - [ ] Presentación: problemática → arquitectura propuesta → decisiones técnicas → demo
 
 ---
